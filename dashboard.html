@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Student Deployment Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="navbar">
+      <h2>Student Deployment Dashboard</h2>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+      <h3>Upload Website</h3>
+
+      <input type="file" id="projectFile" />
+
+      <button onclick="uploadProject()">Upload</button>
+
+      <h3>Uploaded Projects</h3>
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search project..."
+        onkeyup="searchProjects()"
+      />
+
+      <table>
+        <tr>
+          <th>Project Name</th>
+          <th>Status</th>
+          <th>URL</th>
+          <th>Action</th>
+        </tr>
+
+        <tbody id="projectTable">
+          <tr>
+            <td>Event Management</td>
+            <td>Pending</td>
+            <td>
+              <button onclick="deployProject(this)">Deploy</button>
+              <button onclick="deleteProject(this)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
