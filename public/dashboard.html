@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Intranet Deployment Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Campus Intranet Deployment Manager</h1>
+
+<div class="upload-box">
+
+<h3>Deploy New Website</h3>
+
+<form id="deployForm">
+
+<input type="text" name="name" placeholder="Project Name" required>
+
+<input type="file" name="project" id="fileInput" accept=".zip" required>
+
+<button type="submit">Deploy Website</button>
+
+</form>
+
+<p id="message"></p>
+
+</div>
+
+<h3>Deployed Projects</h3>
+
+<table id="projectsTable">
+
+<thead>
+<tr>
+<th>Project</th>
+<th>URL</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
