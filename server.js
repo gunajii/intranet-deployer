@@ -10,6 +10,11 @@ const httpProxy = require("http-proxy")
 const app = express()
 const proxy = httpProxy.createProxyServer({})
 
+proxy.on("error",(err,req,res)=>{
+console.log("Proxy error:",err.message)
+res.status(502).send("Project container not running")
+})
+
 app.use(cors())
 app.use(express.json())
 app.use(express.static("public"))
@@ -72,7 +77,6 @@ return Math.floor(Math.random()*1000)+3000
 
 app.use((req,res,next)=>{
 
-// Fix asset requests like /style.css using referer
 if(req.url.match(/^\/(style|css|js|img|images|assets)/)){
 
 const referer=req.headers.referer
@@ -130,118 +134,186 @@ res.json([])
 
 })
 
+function fixHtmlBase(folder, projectName){
 
-
-app.post("/deploy", upload.single("project"), (req,res)=>{
-
-console.log("Deploy request received")
-
-if(!req.file){
-return res.status(400).json({message:"No file uploaded"})
-}
-
-const projectName = req.body.name.trim()
-
-if(!/^[a-zA-Z0-9_-]+$/.test(projectName)){
-return res.status(400).json({
-message:"Invalid project name"
-})
-}
-
-let projects=[]
-
-if(fs.existsSync("metadata/projects.json")){
-projects=JSON.parse(fs.readFileSync("metadata/projects.json"))
-}
-
-const exists = projects.find(p=>p.name===projectName)
-
-if(exists){
-return res.status(400).json({
-message:"Project name already exists"
-})
-}
-
-const zipFile = req.file.path
-const port = generatePort()
-
-const deployPath = path.join(__dirname,"deployed",projectName)
-
-fs.mkdirSync(deployPath,{recursive:true})
-
-
-
-fs.createReadStream(zipFile)
-.pipe(unzipper.Extract({path:deployPath}))
-.promise()
-.then(()=>{
-
-console.log("ZIP extracted")
-
-const indexFolder=findIndexFolder(deployPath)
-
-if(!indexFolder){
-return res.status(400).json({
-message:"index.html not found in project"
-})
-}
-
-
-
-if(indexFolder!==deployPath){
-
-const files=fs.readdirSync(indexFolder)
+const files = fs.readdirSync(folder)
 
 files.forEach(file=>{
-fs.renameSync(
-path.join(indexFolder,file),
-path.join(deployPath,file)
-)
-})
+
+const fullPath = path.join(folder,file)
+
+if(fs.statSync(fullPath).isDirectory()){
+fixHtmlBase(fullPath, projectName)
 }
 
-deployContainer()
+if(file.endsWith(".html")){
 
-})
+let html = fs.readFileSync(fullPath,"utf8")
 
-
-
-function deployContainer(){
-
-exec(`cp docker/Dockerfile deployed/${projectName}`)
-
-exec(`docker build -t site_${projectName} ./deployed/${projectName}`,()=>{
-
-exec(`docker run -d -p ${port}:80 --name site_${projectName} site_${projectName}`)
-
-let projects=[]
-
-if(fs.existsSync("metadata/projects.json")){
-projects=JSON.parse(fs.readFileSync("metadata/projects.json"))
-}
-
-projects.push({
-name:projectName,
-port:port,
-container:`site_${projectName}`
-})
-
-fs.writeFileSync(
-"metadata/projects.json",
-JSON.stringify(projects,null,2)
+if(!html.includes("<base")){
+html = html.replace(
+"<head>",
+`<head><base href="/${projectName}/">`
 )
 
-res.json({
-message:"Deployment successful",
-url:`http://mmcoe/${projectName}`
-})
-
-})
+fs.writeFileSync(fullPath,html)
+}
 
 }
 
 })
 
+}
+
+app.post("/deploy", upload.single("project"), (req, res) => {
+console.log("Deploy request received")
+
+if (!req.file) {
+return res.status(400).json({ message: "No file uploaded" })
+}
+
+    const projectName = req.body.name.trim()
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(projectName)) {
+        return res.status(400).json({
+            message: "Invalid project name"
+        })
+    }
+
+    let projects = []
+
+    if (fs.existsSync("metadata/projects.json")) {
+        projects = JSON.parse(fs.readFileSync("metadata/projects.json"))
+    }
+
+    const exists = projects.find(p => p.name === projectName)
+
+    if (exists) {
+        return res.status(400).json({
+            message: "Project name already exists"
+        })
+    }
+
+    const zipFile = req.file.path
+    const port = generatePort()
+
+    const deployPath = path.join(__dirname, "deployed", projectName)
+
+    fs.mkdirSync(deployPath, { recursive: true })
+
+    fs.createReadStream(zipFile)
+        .pipe(unzipper.Extract({ path: deployPath }))
+        .promise()
+        .then(() => {
+
+            console.log("ZIP extracted")
+
+            const indexPath = path.join(deployPath, "index.html")
+
+            if (fs.existsSync(indexPath)) {
+
+                let html = fs.readFileSync(indexPath, "utf8")
+
+                if (!html.includes("<base")) {
+                    html = html.replace(
+                        "<head>",
+                        `<head><base href="/${projectName}/">`
+                    )
+
+                    fs.writeFileSync(indexPath, html)
+                }
+
+            }
+
+            const indexFolder = findIndexFolder(deployPath)
+
+            if (!indexFolder) {
+                return res.status(400).json({
+                    message: "index.html not found in project"
+                })
+            }
+
+            if (indexFolder !== deployPath) {
+
+                const files = fs.readdirSync(indexFolder)
+
+                files.forEach(file => {
+                    fs.renameSync(
+                        path.join(indexFolder, file),
+                        path.join(deployPath, file)
+                    )
+                })
+
+            }
+            fixHtmlBase(deployPath, projectName)
+            function deployContainer() {
+
+                console.log("Copying Dockerfile")
+
+                exec(`cp docker/Dockerfile ./deployed/${projectName}`, (err) => {
+
+                    if (err) {
+                        console.log("Dockerfile copy failed", err)
+                        return res.status(500).json({ message: "Dockerfile copy failed" })
+                    }
+
+                    console.log("Building Docker image")
+
+                    exec(`docker build -t site_${projectName} ./deployed/${projectName}`, (err) => {
+
+                        if (err) {
+                            console.log("Docker build failed", err)
+                            return res.status(500).json({ message: "Docker build failed" })
+                        }
+
+                        console.log("Running container")
+
+                        exec(`docker run -d -p ${port}:80 --name site_${projectName} site_${projectName}`, (err) => {
+
+                            if (err) {
+                                console.log("Docker run failed", err)
+                                return res.status(500).json({ message: "Docker run failed" })
+                            }
+
+                            let projects = []
+
+                            if (fs.existsSync("metadata/projects.json")) {
+                                projects = JSON.parse(fs.readFileSync("metadata/projects.json"))
+                            }
+
+                            projects.push({
+                                name: projectName,
+                                port: port,
+                                container: `site_${projectName}`
+                            })
+
+                            fs.writeFileSync(
+                                "metadata/projects.json",
+                                JSON.stringify(projects, null, 2)
+                            )
+
+                            console.log("Deployment successful")
+
+                            res.json({
+                                message: "Deployment successful",
+                                url: `http://mmcoe/${projectName}`
+                            })
+
+                        })
+
+                    })
+
+                })
+
+            }
+
+            deployContainer()
+
+        }).catch(err => {
+            console.error("Extraction error:", err);
+            res.status(500).json({ message: "Extraction failed" });
+        })
+})
 
 
 app.delete("/projects/:name",(req,res)=>{
@@ -267,7 +339,36 @@ res.json({message:"deleted"})
 
 })
 
+function restoreProjects(){
 
+if(!fs.existsSync("metadata/projects.json")) return
+
+const projects = JSON.parse(fs.readFileSync("metadata/projects.json"))
+
+projects.forEach(project=>{
+
+exec(`docker start ${project.container}`,(err)=>{
+
+if(err){
+console.log("Container not found, rebuilding:",project.name)
+
+exec(`docker build -t site_${project.name} ./deployed/${project.name}`,()=>{
+
+exec(`docker run -d -p ${project.port}:80 --name ${project.container} site_${project.name}`)
+
+})
+
+}else{
+console.log("Container restarted:",project.name)
+}
+
+})
+
+})
+
+}
+
+restoreProjects()
 
 app.listen(PORT,()=>{
 console.log("Deployment server running on port "+PORT)
