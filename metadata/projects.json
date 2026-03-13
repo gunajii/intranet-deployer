@@ -1,0 +1,77 @@
+[
+  {
+    "name": "neel",
+    "port": 3303,
+    "container": "site_neel"
+  },
+  {
+    "name": "kneel",
+    "port": 3087,
+    "container": "site_kneel"
+  },
+  {
+    "name": "neelu",
+    "port": 3762,
+    "container": "site_neelu"
+  },
+  {
+    "name": "neeli",
+    "port": 3662,
+    "container": "site_neeli"
+  },
+  {
+    "name": "peeli",
+    "port": 3685,
+    "container": "site_peeli"
+  },
+  {
+    "name": "yooo",
+    "port": 3546,
+    "container": "site_yooo"
+  },
+  {
+    "name": "gom",
+    "port": 3660,
+    "container": "site_gom"
+  },
+  {
+    "name": "real",
+    "port": 3709,
+    "container": "site_real"
+  },
+  {
+    "name": "lastest",
+    "port": 3249,
+    "container": "site_lastest"
+  },
+  {
+    "name": "final",
+    "port": 3344,
+    "container": "site_final"
+  },
+  {
+    "name": "vaidehi",
+    "port": 3150,
+    "container": "site_vaidehi"
+  },
+  {
+    "name": "guna",
+    "port": 3284,
+    "container": "site_guna"
+  },
+  {
+    "name": "gunaji",
+    "port": 3078,
+    "container": "site_gunaji"
+  },
+  {
+    "name": "shinde",
+    "port": 3951,
+    "container": "site_shinde"
+  },
+  {
+    "name": "anula",
+    "port": 3442,
+    "container": "site_anula"
+  }
+]

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Student Website Request</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Student Deployment Request</h1>
+
+      <div class="upload-box">
+        <h3>Submit Website for Deployment</h3>
+
+        <form id="requestForm">
+          <input type="text" name="name" placeholder="Project Name" required />
+
+          <input type="file" name="project" accept=".zip" required />
+
+          <button type="submit">Request Deployment</button>
+        </form>
+
+        <p id="message"></p>
+      </div>
+    </div>
+
+    <h3>Your Deployments</h3>
+
+    <table id="studentProjects">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Status</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    </table>
+
+    <script src="script.js"></script>
+  </body>
+</html>

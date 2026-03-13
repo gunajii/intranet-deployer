@@ -1,55 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <title>Intranet Deployment Manager</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<head>
-<title>Intranet Deployment Manager</title>
-<link rel="stylesheet" href="style.css">
-</head>
+  <body>
+    <div class="container">
+      <h1>Campus Intranet Deployment Manager</h1>
 
-<body>
+      <div class="upload-box">
+        <h3>Deploy New Website</h3>
 
-<div class="container">
+        <form id="deployForm">
+          <input type="text" name="name" placeholder="Project Name" required />
 
-<h1>Campus Intranet Deployment Manager</h1>
+          <input
+            type="file"
+            name="project"
+            id="fileInput"
+            accept=".zip"
+            required
+          />
 
-<div class="upload-box">
+          <button type="submit">Deploy Website</button>
+        </form>
 
-<h3>Deploy New Website</h3>
+        <p id="message"></p>
+      </div>
 
-<form id="deployForm">
+      <h3>Pending Deployment Requests</h3>
 
-<input type="text" name="name" placeholder="Project Name" required>
+      <table id="requestsTable">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-<input type="file" name="project" id="fileInput" accept=".zip" required>
+        <tbody></tbody>
+      </table>
 
-<button type="submit">Deploy Website</button>
+      <h3>Deployed Projects</h3>
 
-</form>
+      <table id="projectsTable">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>URL</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-<p id="message"></p>
+        <tbody></tbody>
+      </table>
+    </div>
 
-</div>
-
-<h3>Deployed Projects</h3>
-
-<table id="projectsTable">
-
-<thead>
-<tr>
-<th>Project</th>
-<th>URL</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-
-</table>
-
-</div>
-
-<script src="script.js"></script>
-
-</body>
-
+    <script src="script.js"></script>
+  </body>
 </html>
